@@ -1,0 +1,83 @@
+#!/usr/bin/env nodejs
+
+unix_time = (new Date()).getTime() / 1000;
+
+if(process.argv.length > 2) {
+	const val = parseInt(process.argv[2]);
+	if(!isNaN(val)) unix_time = val;
+}
+
+const INGAME_HR_LEN = 120;
+
+const WEATHER_NAME = [
+	"Clear",
+    "Rainy",
+    "Drizzling",
+    "Misty",
+    "Foggy",
+    "Hazy",
+    "Cloudy",
+    "Mostly Cloudy",
+    "Partly Cloudy",
+    "Mostly Clear"
+];
+
+const WEATHER_PERIODS = require("./weather_periods.json");
+
+class TimeSlice {
+	constructor(timeslice) {
+		this.duration = parseInt(timeslice["duration"] * INGAME_HR_LEN);
+		this.left = parseInt(timeslice["left"] * INGAME_HR_LEN)+1;
+	}
+}
+
+class Weather {
+	constructor(time) {
+		this.period = parseInt(time["total_hrs"] % WEATHER_PERIODS.length);
+		this.current = WEATHER_NAME[ WEATHER_PERIODS[this.period] ];
+
+		const current_period = WEATHER_PERIODS[this.period];
+
+		let end_period = this.period;
+		while(WEATHER_PERIODS[end_period] == current_period) {
+			end_period++;
+			if(end_period >= WEATHER_PERIODS.length) end_period = 0;
+		}
+
+		let start_period = this.period;
+		while(WEATHER_PERIODS[start_period] == current_period) {
+			start_period--;
+			if(start_period < 0) start_period = WEATHER_PERIODS.length-1;
+		}
+		start_period++;
+
+		const gta_timeslice = {};
+
+		gta_timeslice["duration"] = end_period - start_period;
+		if(gta_timeslice["duration"] < 0) gta_timeslice["duration"] = WEATHER_PERIODS.length + gta_timeslice["duration"];
+
+		const past_the_hour = time["current_hr"] - parseInt(time["current_hr"]);
+		gta_timeslice["left"] = end_period - this.period - past_the_hour;
+		if(gta_timeslice["left"] < 0) gta_timeslice["left"] = WEATHER_PERIODS.length + gta_timeslice["left"];
+
+		this.timeslice = new TimeSlice(gta_timeslice);
+	}
+}
+
+class GTATime {
+	constructor(wanted_time) {
+		this.unix_time = wanted_time;
+
+		const time = {};
+		time["total_hrs"] = this.unix_time / INGAME_HR_LEN;
+		time["current_hr"] = time["total_hrs"] % 24.0;
+
+		this.weather = new Weather(time);
+
+		this.day = parseInt(this.weather.period / WEATHER_PERIODS.length * 16) + 1;
+		this.hour = parseInt(time["current_hr"]);
+		this.minute = parseInt((time["current_hr"] - this.hour) * 60.0);
+	}
+}
+
+console.log(JSON.stringify(new GTATime(unix_time)));
