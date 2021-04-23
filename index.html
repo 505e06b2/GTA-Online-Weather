@@ -43,7 +43,8 @@
 				const condensed = {};
 				const left_gta_hr = gtatime.weather.timeslice.left / 120; //120 is the seconds to hr conversion
 				condensed.hour = parseInt(left_gta_hr);
-				condensed.minute = 59 - gtatime.minute; //so it adds up better
+				const left_gta_min = (left_gta_hr - condensed.hour) * 60.0;
+				condensed.minute = parseInt(left_gta_min);
 				return gtatimeToHHMM(condensed);
 			}
 
