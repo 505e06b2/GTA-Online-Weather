@@ -42,7 +42,7 @@
 				let current = new GTATime();
 				const formatted_time = `${displayFormat(current.hour)}:${displayFormat(current.minute)}`;
 				document.querySelector("#time").innerText = formatted_time;
-				document.title = `${formatted_time} - ${current.weather.name}`;
+				document.title = `[${formatted_time}] ${current.weather.name} / ${getDurationLeftInGTATime(current)}`;
 
 				const weather_table = document.querySelector("#weather");
 				weather_table.innerHTML = `<tr> <th>Order</th> <th>Start Time</th> <th>Duration Left</th> <th>Weather Type</th> </tr>`;
