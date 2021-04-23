@@ -82,8 +82,6 @@ class GTATime:
 
 
 if __name__ == "__main__":
-	print(GTATime(int(sys.argv[1]))) #debug serialisation
-	"""
 	import time
 	def printCentredLine(l): print(l.center(30))
 	def secondsToMMSS(s): return time.strftime("[%M:%S]", time.gmtime(s))
@@ -97,4 +95,3 @@ if __name__ == "__main__":
 		current_gtatime = GTATime(current_gtatime.unix_time + current_gtatime.weather.timeslice.left)
 		print(f"{i}. {secondsToMMSS(current_gtatime.weather.timeslice.left)} {current_gtatime.weather.current}")
 	print("")
-	"""
