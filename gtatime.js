@@ -34,7 +34,7 @@ class TimeSlice {
 class Weather {
 	constructor(time) {
 		this.period = parseInt(time["total_hrs"] % WEATHER_PERIODS.length);
-		this.current = WEATHER_NAME[ WEATHER_PERIODS[this.period] ];
+		this.name = WEATHER_NAME[ WEATHER_PERIODS[this.period] ];
 
 		const current_period = WEATHER_PERIODS[this.period];
 

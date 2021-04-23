@@ -35,7 +35,7 @@ class TimeSlice:
 class Weather:
 	def __init__(self, time):
 		self.period = int(time["total_hrs"] % len(WEATHER_PERIODS)) #1 period is 1hr in game
-		self.current = WEATHER_NAME[ WEATHER_PERIODS[self.period] ]
+		self.name = WEATHER_NAME[ WEATHER_PERIODS[self.period] ]
 
 		#if you don't need timeslice info, just remove the rest of this
 		current_period = WEATHER_PERIODS[self.period]
@@ -90,8 +90,8 @@ if __name__ == "__main__":
 	print("")
 	printCentredLine(f"[ {current_gtatime.hour:02} : {current_gtatime.minute:02} ]")
 	printCentredLine("_Weather_")
-	print(f"1. {secondsToMMSS(current_gtatime.weather.timeslice.left)} {current_gtatime.weather.current}")
+	print(f"1. {secondsToMMSS(current_gtatime.weather.timeslice.left)} {current_gtatime.weather.name}")
 	for i in range(2, 5):
 		current_gtatime = GTATime(current_gtatime.unix_time + current_gtatime.weather.timeslice.left)
-		print(f"{i}. {secondsToMMSS(current_gtatime.weather.timeslice.left)} {current_gtatime.weather.current}")
+		print(f"{i}. {secondsToMMSS(current_gtatime.weather.timeslice.left)} {current_gtatime.weather.name}")
 	print("")

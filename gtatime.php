@@ -44,7 +44,7 @@ class TimeSlice {
 class Weather {
 	function __construct($time) {
 		$this->period = intval(fmod($time["total_hrs"], count($GLOBALS["weather_periods"])));
-		$this->current = $GLOBALS["weather_name"][ $GLOBALS["weather_periods"][$this->period] ];
+		$this->name = $GLOBALS["weather_name"][ $GLOBALS["weather_periods"][$this->period] ];
 
 		$current_period = $GLOBALS["weather_periods"][$this->period];
 

@@ -9,29 +9,48 @@
 		</style>
 		<script src="gtatime.js"></script>
 		<script>
+			function displayFormat(i) {
+				return i.toString().padStart(2, "0");
+			}
+
 			function secondsToMMSS(d) {
 				var m = Math.floor(d % 3600 / 60);
 				var s = Math.floor(d % 3600 % 60);
-				return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+				return `${displayFormat(m)}:${displayFormat(s)}`;
+			}
+
+			function gtatimeToHHMM(g) {
+				return `${displayFormat(g.hour)}:${displayFormat(g.minute)}`;
+			}
+
+			function getDurationInGTATime(gtatime) {
+				const condensed = {};
+				const left_gta_hr = gtatime.weather.timeslice.left / 120; //120 is the seconds to hr conversion
+				condensed.hour = parseInt(left_gta_hr);
+				condensed.minute = parseInt((left_gta_hr - condensed.hour) * 60.0);
+				return gtatimeToHHMM(condensed);
 			}
 
 			window.onload = async () => {
+
+
 				await initGTATime();
-				let out = "";
 				let current = new GTATime();
-				out += `Game Time: [ ${current.hour.toString().padStart(2, "0")} : ${current.minute.toString().padStart(2, "0")} ]\n`;
-				out += "\n";
-				out += `Order  Duration    Type\n`;
-				out += `   1.  [${secondsToMMSS(current.weather.timeslice.left)}]   ${current.weather.current}\n`;
+				document.querySelector("#time").innerText = `${displayFormat(current.hour)}:${displayFormat(current.minute)}`;
+				const weather_table = document.querySelector("#weather");
+				weather_table.innerHTML = `<tr> <th>Order</th> <th>Start Time</th> <th>Duration Left</th> <th>Weather Type</th> </tr>`;
+
+				const currentStartTime = new GTATime(current.unix_time - current.weather.timeslice.duration + current.weather.timeslice.left);
+				weather_table.innerHTML += `<tr> <td>  1.</td> <td>${gtatimeToHHMM(currentStartTime)}</td> <td>${getDurationInGTATime(current)}</td> <td>${current.weather.name}</td> </tr>`;
 				for(let i = 1; i < 10; i++) {
 					current = new GTATime(current.unix_time + current.weather.timeslice.left);
-					out += `${(i+1).toString().padStart(4, " ")}.  [${secondsToMMSS(current.weather.timeslice.left)}]   ${current.weather.current}\n`;
+					weather_table.innerHTML += `<tr> <td>${i.toString().padStart(3, " ")}.</td> <td>${gtatimeToHHMM(current)}</td> <td>${getDurationInGTATime(current)}</td> <td>${current.weather.name}</td> </tr>`;
 				}
-				document.querySelector("#out").innerText = out;
 			};
 		</script>
 	</head>
 	<body>
-		<pre id="out"></pre>
+		<h1>Game Time: <span id="time">00:00</span></h1>
+		<table id="weather"></table>
 	</body>
 </html>
