@@ -1,12 +1,5 @@
 #!/usr/bin/env nodejs
 
-unix_time = (new Date()).getTime() / 1000;
-
-if(process.argv.length > 2) {
-	const val = parseInt(process.argv[2]);
-	if(!isNaN(val)) unix_time = val;
-}
-
 const INGAME_HR_LEN = 120;
 
 const WEATHER_NAME = [
@@ -22,7 +15,14 @@ const WEATHER_NAME = [
     "Mostly Clear"
 ];
 
-const WEATHER_PERIODS = require("./weather_periods.json");
+let WEATHER_PERIODS = [];
+if(typeof(process) != "undefined") {
+	WEATHER_PERIODS = require("./weather_periods.json");
+} else {
+	window.initGTATime = async () => {
+		WEATHER_PERIODS = await (await fetch("./weather_periods.json")).json();
+	}
+}
 
 class TimeSlice {
 	constructor(timeslice) {
@@ -66,6 +66,7 @@ class Weather {
 
 class GTATime {
 	constructor(wanted_time) {
+		if(typeof(wanted_time) == "undefined") wanted_time = (new Date()).getTime() / 1000;
 		this.unix_time = wanted_time;
 
 		const time = {};
@@ -80,4 +81,14 @@ class GTATime {
 	}
 }
 
-console.log(JSON.stringify(new GTATime(unix_time)));
+//NodeJS
+if(typeof(process) != "undefined") {
+	unix_time = undefined;
+
+	if(process.argv.length > 2) {
+		const val = parseInt(process.argv[2]);
+		if(!isNaN(val)) unix_time = val;
+	}
+
+	console.log(JSON.stringify(new GTATime(unix_time)));
+}
