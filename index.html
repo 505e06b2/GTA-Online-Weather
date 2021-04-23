@@ -6,6 +6,22 @@
 				background: #333;
 				color: #eee;
 			}
+
+			table {
+				border-collapse: collapse;
+			}
+
+			th {
+				padding: 5px;
+			}
+
+			td:nth-child(1), td:nth-child(2), td:nth-child(3) {
+				text-align: center;
+			}
+
+			tbody:nth-child(even) {
+				background: #555;
+			}
 		</style>
 		<script src="gtatime.js"></script>
 		<script>
@@ -27,25 +43,28 @@
 				const condensed = {};
 				const left_gta_hr = gtatime.weather.timeslice.left / 120; //120 is the seconds to hr conversion
 				condensed.hour = parseInt(left_gta_hr);
-				condensed.minute = parseInt((left_gta_hr - condensed.hour) * 60.0);
+				condensed.minute = 59 - gtatime.minute; //so it adds up better
 				return gtatimeToHHMM(condensed);
 			}
 
-			window.onload = async () => {
-
-
-				await initGTATime();
+			function updateValues() {
 				let current = new GTATime();
 				document.querySelector("#time").innerText = `${displayFormat(current.hour)}:${displayFormat(current.minute)}`;
 				const weather_table = document.querySelector("#weather");
 				weather_table.innerHTML = `<tr> <th>Order</th> <th>Start Time</th> <th>Duration Left</th> <th>Weather Type</th> </tr>`;
 
 				const currentStartTime = new GTATime(current.unix_time - current.weather.timeslice.duration + current.weather.timeslice.left);
-				weather_table.innerHTML += `<tr> <td>  1.</td> <td>${gtatimeToHHMM(currentStartTime)}</td> <td>${getDurationInGTATime(current)}</td> <td>${current.weather.name}</td> </tr>`;
+				weather_table.innerHTML += `<tr> <td>1</td> <td>${gtatimeToHHMM(currentStartTime)}</td> <td>${getDurationInGTATime(current)}</td> <td>${current.weather.name}</td> </tr>`;
 				for(let i = 1; i < 10; i++) {
 					current = new GTATime(current.unix_time + current.weather.timeslice.left);
-					weather_table.innerHTML += `<tr> <td>${i.toString().padStart(3, " ")}.</td> <td>${gtatimeToHHMM(current)}</td> <td>${getDurationInGTATime(current)}</td> <td>${current.weather.name}</td> </tr>`;
+					weather_table.innerHTML += `<tr> <td>${i+1}</td> <td>${gtatimeToHHMM(current)}</td> <td>${getDurationInGTATime(current)}</td> <td>${current.weather.name}</td> </tr>`;
 				}
+			}
+
+			window.onload = async () => {
+				await initGTATime();
+				updateValues();
+				setInterval(updateValues, 1000);
 			};
 		</script>
 	</head>
