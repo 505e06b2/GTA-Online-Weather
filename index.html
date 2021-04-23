@@ -40,7 +40,10 @@
 
 			function updateValues() {
 				let current = new GTATime();
-				document.querySelector("#time").innerText = `${displayFormat(current.hour)}:${displayFormat(current.minute)}`;
+				const formatted_time = `${displayFormat(current.hour)}:${displayFormat(current.minute)}`;
+				document.querySelector("#time").innerText = formatted_time;
+				document.title = `${formatted_time} - ${current.weather.name}`;
+
 				const weather_table = document.querySelector("#weather");
 				weather_table.innerHTML = `<tr> <th>Order</th> <th>Start Time</th> <th>Duration Left</th> <th>Weather Type</th> </tr>`;
 
