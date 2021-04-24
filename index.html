@@ -1,10 +1,18 @@
 <html>
 	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
 		<title>GTA:O Weather</title>
 		<style>
 			body {
 				background: #333;
 				color: #eee;
+				font-family: sans-serif;
+			}
+
+			h1 {
+				text-align: center;
 			}
 
 			table {
@@ -21,6 +29,14 @@
 
 			tbody:nth-child(even) {
 				background: #555;
+			}
+
+			#centre {
+				margin: 0 auto;
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
 			}
 		</style>
 		<script src="gtatime.js"></script>
@@ -41,17 +57,18 @@
 			function updateValues() {
 				let current = new GTATime();
 				const formatted_time = `${displayFormat(current.hour)}:${displayFormat(current.minute)}`;
+				document.querySelector("#day").innerText = current.day;
 				document.querySelector("#time").innerText = formatted_time;
 				document.title = `[${formatted_time}] ${current.weather.name} / ${getDurationLeftInGTATime(current)}`;
 
 				const weather_table = document.querySelector("#weather");
-				weather_table.innerHTML = `<tr> <th>Order</th> <th>Start Time</th> <th>Duration Left</th> <th>Weather Type</th> </tr>`;
+				weather_table.innerHTML = `<tr> <th>Start Day</th> <th>Start Time</th> <th>Duration Left</th> <th>Weather Type</th> </tr>`;
 
 				const currentStartTime = new GTATime(current.unix_time - current.weather.timeslice.duration + current.weather.timeslice.left);
-				weather_table.innerHTML += `<tr> <td>1</td> <td>${gtatimeToHHMM(currentStartTime)}</td> <td>${getDurationLeftInGTATime(current)}</td> <td>${current.weather.name}</td> </tr>`;
+				weather_table.innerHTML += `<tr> <td>${displayFormat(currentStartTime.day)}</td> <td>${gtatimeToHHMM(currentStartTime)}</td> <td>${getDurationLeftInGTATime(current)}</td> <td>${current.weather.name}</td> </tr>`;
 				for(let i = 1; i < 10; i++) {
 					current = new GTATime(current.unix_time + current.weather.timeslice.left);
-					weather_table.innerHTML += `<tr> <td>${i+1}</td> <td>${gtatimeToHHMM(current)}</td> <td>${getDurationLeftInGTATime(current)}</td> <td>${current.weather.name}</td> </tr>`;
+					weather_table.innerHTML += `<tr> <td>${displayFormat(current.day)}</td> <td>${gtatimeToHHMM(current)}</td> <td>${getDurationLeftInGTATime(current)}</td> <td>${current.weather.name}</td> </tr>`;
 				}
 			}
 
@@ -63,7 +80,9 @@
 		</script>
 	</head>
 	<body>
-		<h1>Game Time: <span id="time">00:00</span></h1>
-		<table id="weather"></table>
+		<div id="centre">
+			<h1>Day <span id="day">01</span> | <span id="time">00:00</span></h1>
+			<table id="weather"></table>
+		</div>
 	</body>
 </html>
