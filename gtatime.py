@@ -8,18 +8,9 @@ INGAME_HR_LEN = 120 #1 in-game hour in seconds
 
 WEATHER_PERIODS = json.load(open("weather_periods.json")) #this was generated with the data from gtaweather.js
 #considered parity with https://wiki.gtanet.work/index.php?title=Weather, but didn't seem useful
-WEATHER_NAME = [
-	"Clear",
-    "Rainy",
-    "Drizzling",
-    "Misty",
-    "Foggy",
-    "Hazy",
-    "Cloudy",
-    "Mostly Cloudy",
-    "Partly Cloudy",
-    "Mostly Clear"
-]
+WEATHER_NAME = json.load(open("weather_names.json"))
+
+WEEKDAY_NAME = json.load(open("weekday_names.json"))
 
 #This class is for turning GTA hrs (as a float) to irl seconds - the weather only changes on the hour, so it doesn't seem as useful to return the GTA hrs
 class TimeSlice:
@@ -35,7 +26,8 @@ class TimeSlice:
 class Weather:
 	def __init__(self, time):
 		self.period = int(time["total_hrs"] % len(WEATHER_PERIODS)) #1 period is 1hr in game
-		self.name = WEATHER_NAME[ WEATHER_PERIODS[self.period] ]
+		self.id = WEATHER_PERIODS[self.period]
+		self.name = WEATHER_NAME[self.id]
 
 		#if you don't need timeslice info, just remove the rest of this
 		current_period = WEATHER_PERIODS[self.period]
@@ -69,9 +61,11 @@ class GTATime:
 		time = {} #protected vars - no initialiser, since current_hr depends on total_hrs - Weather needs these to work, and modulo is an expensive op
 		time["total_hrs"] = self.unix_time / INGAME_HR_LEN
 		time["current_hr"] = time["total_hrs"] % 24.0 #modulo returns float (fmod)
+		time["current_day"] = int(time["total_hrs"] / 24)+1
 
 		self.weather = Weather(time)
 
+		self.weekday = WEEKDAY_NAME[time["current_day"] % len(WEEKDAY_NAME)]
 		self.day = int(self.weather.period / len(WEATHER_PERIODS) * 16) + 1 #+1 to make it 1-indexed
 		self.hour = int(time["current_hr"])
 		self.minute = int((time["current_hr"] - self.hour) * 60.0) #remove whole number with -self.hours, *60 for hrs to mins
@@ -87,6 +81,7 @@ if __name__ == "__main__":
 	def secondsToMMSS(s): return time.strftime("[%M:%S]", time.gmtime(s))
 
 	current_gtatime = GTATime()
+	print(current_gtatime)
 	print("")
 	printCentredLine(f"[ {current_gtatime.hour:02} : {current_gtatime.minute:02} ]")
 	printCentredLine("_Weather_")

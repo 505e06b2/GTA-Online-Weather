@@ -20,7 +20,8 @@ def checkEdgeCases(func, name="?"):
 	results = []
 	for x in edge_cases:
 		current = func(x)
-		del current["unix_time"] #will be the only change in serialisation
+		del current["unix_time"] #will be the only changes in serialisation
+		del current["weekday"]
 		results.append(current)
 
 	compare_to = str(results[0])

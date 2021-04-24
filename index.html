@@ -2,8 +2,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="icon" id="icon" href="web_icons/SVG/Sun.svg">
-		<link rel="stylesheet" href="web_icons/webfont/climacons-font.css">
+		<link rel="icon" id="icon" href="web_icons/sun.png">
+		<link rel="stylesheet" href="web_font/climacons-font.css">
 
 		<title>GTA:O Weather</title>
 		<style>
@@ -49,25 +49,35 @@
 		</style>
 		<script src="gtatime.js"></script>
 		<script>
-			const icon_names = {
-				"Clear": "Sun",
-				"Rainy": "Cloud-Rain",
-				"Drizzling": "Cloud-Drizzle",
-				"Misty": "Cloud-Fog-Sun",
-				"Foggy": "Cloud-Fog",
-				"Hazy": "Cloud-Fog",
-				"Cloudy": "Cloud",
-				"Mostly Cloudy": "Cloud-Sun",
-				"Partly Cloudy": "Cloud-Sun",
-				"Mostly Clear": "Cloud-Sun"
-			};
-
-			function changeFavicon(weather) {
-				document.querySelector("#icon").href = `web_icons/SVG/${icon_names[weather]}.svg`;
+			function changeFavicon(gtatime) {
+				const icon_filename = [
+					"sun", //clear
+					"rain", //rain
+					"rain", //drizzle //THUNDER?? then into cloud again
+					"few_clouds", //mist
+					"sun", //fog
+					"sun", //hazy
+					"clouds", //cloudy
+					"clouds", //broken cloud
+					"few_clouds", //"Partly Cloudy":
+					"sun" //"Mostly Clear":
+				][gtatime.weather.id];
+				document.querySelector("#icon").href = `web_icons/${icon_filename}.png`;
 			}
 
-			function getIcon(weather) {
-				const icon = icon_names[weather].toLowerCase().replaceAll("-", " ");
+			function getIcon(gtatime) {
+				const icon = [
+					"sun", //clear
+					"rain", //rain
+					"showers", //drizzle //THUNDER?? then into cloud again
+					"cloud sun", //mist
+					"sun", //fog
+					"sun", //hazy
+					"cloud", //cloudy
+					"cloud", //broken cloud
+					"cloud sun", //"Partly Cloudy":
+					"sun" //"Mostly Clear":
+				][gtatime.weather.id];
 				return `<span class="fs1 climacon ${icon}" aria-hidden="true"></span>`;
 			}
 
@@ -85,21 +95,27 @@
 			}
 
 			function updateValues() {
-				let current = new GTATime();
-				const formatted_time = `${displayFormat(current.hour)}:${displayFormat(current.minute)}`;
-				document.querySelector("#day").innerText = current.day;
+				let time_now = new GTATime();
+				const formatted_time = `${displayFormat(time_now.hour)}:${displayFormat(time_now.minute)}`;
+				document.querySelector("#day").innerText = time_now.weekday;
 				document.querySelector("#time").innerText = formatted_time;
-				document.title = `${getDurationLeftInGTATime(current)} / ${current.weather.name}`;
-				changeFavicon(current.weather.name);
 
 				const weather_table = document.querySelector("#weather");
 				weather_table.innerHTML = `<tr> <th>Start Day</th> <th>Start Time</th> <th>Duration Left</th> <th>Weather Type</th> </tr>`;
 
-				const currentStartTime = new GTATime(current.unix_time - current.weather.timeslice.duration + current.weather.timeslice.left);
-				weather_table.innerHTML += `<tr> <td>${displayFormat(currentStartTime.day)}</td> <td>${gtatimeToHHMM(currentStartTime)}</td> <td>${getDurationLeftInGTATime(current)}</td> <td>${getIcon(current.weather.name)} ${current.weather.name}</td> </tr>`;
+				const currentStartTime = new GTATime(time_now.unix_time - time_now.weather.timeslice.duration + time_now.weather.timeslice.left);
+				weather_table.innerHTML += `<tr> <td>${displayFormat(currentStartTime.weekday)}</td> <td>${gtatimeToHHMM(currentStartTime)}</td> <td>${getDurationLeftInGTATime(time_now)}</td> <td>${getIcon(time_now)} ${time_now.weather.name}</td> </tr>`;
+
+				//next
+				current = new GTATime(time_now.unix_time + time_now.weather.timeslice.left);
+				weather_table.innerHTML += `<tr> <td>${current.weekday}</td> <td>${gtatimeToHHMM(current)}</td> <td>${getDurationLeftInGTATime(current)}</td> <td>${getIcon(current)} ${current.weather.name}</td> </tr>`;
+
+				changeFavicon(time_now);
+				document.title = `${getDurationLeftInGTATime(time_now)} -> ${current.weather.name}`;
+
 				for(let i = 1; i < 10; i++) {
 					current = new GTATime(current.unix_time + current.weather.timeslice.left);
-					weather_table.innerHTML += `<tr> <td>${displayFormat(current.day)}</td> <td>${gtatimeToHHMM(current)}</td> <td>${getDurationLeftInGTATime(current)}</td> <td>${getIcon(current.weather.name)} ${current.weather.name}</td> </tr>`;
+					weather_table.innerHTML += `<tr> <td>${current.weekday}</td> <td>${gtatimeToHHMM(current)}</td> <td>${getDurationLeftInGTATime(current)}</td> <td>${getIcon(current)} ${current.weather.name}</td> </tr>`;
 				}
 			}
 
@@ -112,7 +128,7 @@
 	</head>
 	<body>
 		<div id="centre">
-			<h1>Day <span id="day">01</span> | <span id="time">00:00</span></h1>
+			<h1><span id="day">Monday</span> | <span id="time">00:00</span></h1>
 			<table id="weather"></table>
 		</div>
 	</body>

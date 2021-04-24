@@ -19,18 +19,9 @@ if(isset($_GET["unix_time"])) {
 
 $GLOBALS["ingame_hr_len"] = 120;
 
-$GLOBALS["weather_name"] = [
-	"Clear",
-    "Rainy",
-    "Drizzling",
-    "Misty",
-    "Foggy",
-    "Hazy",
-    "Cloudy",
-    "Mostly Cloudy",
-    "Partly Cloudy",
-    "Mostly Clear"
-];
+$GLOBALS["weather_name"] = json_decode(file_get_contents("weather_names.json"));
+
+$GLOBALS["weekday_name"] = json_decode(file_get_contents("weekday_names.json"));
 
 $GLOBALS["weather_periods"] = json_decode(file_get_contents("weather_periods.json"));
 
@@ -44,7 +35,8 @@ class TimeSlice {
 class Weather {
 	function __construct($time) {
 		$this->period = intval(fmod($time["total_hrs"], count($GLOBALS["weather_periods"])));
-		$this->name = $GLOBALS["weather_name"][ $GLOBALS["weather_periods"][$this->period] ];
+		$this->id = $GLOBALS["weather_periods"][$this->period];
+		$this->name = $GLOBALS["weather_name"][$this->id];
 
 		$current_period = $GLOBALS["weather_periods"][$this->period];
 
@@ -81,9 +73,11 @@ class GTATime {
 		$time = [];
 		$time["total_hrs"] = $this->unix_time / $GLOBALS["ingame_hr_len"];
 		$time["current_hr"] = fmod($time["total_hrs"], 24.0);
+		$time["current_day"] = intval($time["total_hrs"] / 24)+1;
 
 		$this->weather = new Weather($time);
 
+		$this->weekday = $GLOBALS["weekday_name"][$time["current_day"] % count($GLOBALS["weekday_name"])];
 		$this->day = intval($this->weather->period / count($GLOBALS["weather_periods"]) * 16) + 1;
 		$this->hour = intval($time["current_hr"]);
 		$this->minute = intval(($time["current_hr"] - $this->hour) * 60.0);

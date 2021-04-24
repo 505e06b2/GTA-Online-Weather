@@ -2,24 +2,18 @@
 
 const INGAME_HR_LEN = 120;
 
-const WEATHER_NAME = [
-	"Clear",
-    "Rainy",
-    "Drizzling",
-    "Misty",
-    "Foggy",
-    "Hazy",
-    "Cloudy",
-    "Mostly Cloudy",
-    "Partly Cloudy",
-    "Mostly Clear"
-];
-
+let WEATHER_NAME = [];
+let WEEKDAY_NAME = [];
 let WEATHER_PERIODS = [];
+
 if(typeof(process) != "undefined") {
+	WEATHER_NAME = require("./weather_names.json");
+	WEEKDAY_NAME = require("./weekday_names.json");
 	WEATHER_PERIODS = require("./weather_periods.json");
 } else {
 	window.initGTATime = async () => {
+		WEATHER_NAME = await (await fetch("./weather_names.json")).json();
+		WEEKDAY_NAME = await (await fetch("./weekday_names.json")).json();
 		WEATHER_PERIODS = await (await fetch("./weather_periods.json")).json();
 	}
 }
@@ -34,7 +28,8 @@ class TimeSlice {
 class Weather {
 	constructor(time) {
 		this.period = parseInt(time["total_hrs"] % WEATHER_PERIODS.length);
-		this.name = WEATHER_NAME[ WEATHER_PERIODS[this.period] ];
+		this.id = WEATHER_PERIODS[this.period]
+		this.name = WEATHER_NAME[this.id];
 
 		const current_period = WEATHER_PERIODS[this.period];
 
@@ -72,9 +67,11 @@ class GTATime {
 		const time = {};
 		time["total_hrs"] = this.unix_time / INGAME_HR_LEN;
 		time["current_hr"] = time["total_hrs"] % 24.0;
+		time["current_day"] = parseInt(time["total_hrs"] / 24)+1
 
 		this.weather = new Weather(time);
 
+		this.weekday = WEEKDAY_NAME[time["current_day"] % WEEKDAY_NAME.length];
 		this.day = parseInt(this.weather.period / WEATHER_PERIODS.length * 16) + 1;
 		this.hour = parseInt(time["current_hr"]);
 		this.minute = parseInt((time["current_hr"] - this.hour) * 60.0);
