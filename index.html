@@ -19,6 +19,8 @@
 
 			table {
 				border-collapse: collapse;
+
+				min-width: 50vw;
 			}
 
 			th {
@@ -34,19 +36,12 @@
 				text-align: center;
 			}
 
-			td:nth-child(1) {
-				width: 100px;
-			}
-
-			td:nth-child(4) {
-				width: 200px;
-			}
-
-			tbody:nth-child(even) {
+			tr:nth-child(even) {
 				background: #555;
 			}
 
 			#centre {
+				display: none;
 				margin: 0 auto;
 				position: absolute;
 				top: 50%;
@@ -62,36 +57,30 @@
 		</style>
 		<script src="gtatime.js"></script>
 		<script>
+			const icons = [
+				"sun", //clear
+				"rain", //rain
+				"showers", //drizzle //THUNDER?? then into cloud again
+				"cloud_sun", //mist
+				"sun", //fog
+				"sun", //hazy
+				"cloud", //cloudy
+				"cloud_sun", //broken cloud
+				"cloud_sun", //"Partly Cloudy":
+				"sun" //"Mostly Clear":
+			];
+
+			let html_rows = [];
+
 			function changeFavicon(gtatime) {
-				const icon_filename = [
-					"sun", //clear
-					"rain", //rain
-					"rain", //drizzle //THUNDER?? then into cloud again
-					"few_clouds", //mist
-					"sun", //fog
-					"sun", //hazy
-					"clouds", //cloudy
-					"few_clouds", //broken cloud
-					"few_clouds", //"Partly Cloudy":
-					"sun" //"Mostly Clear":
-				][gtatime.weather.id];
-				document.querySelector("#icon").href = `web_icons/${icon_filename}.png`;
+				const icon = icons[gtatime.weather.id];
+				if(icon == "showers") icon = "rain"; //edge case
+				document.querySelector("#icon").href = `web_icons/${icon}.png`;
 			}
 
 			function getIcon(gtatime) {
-				const icon = [
-					"sun", //clear
-					"rain", //rain
-					"showers", //drizzle //THUNDER?? then into cloud again
-					"cloud sun", //mist
-					"sun", //fog
-					"sun", //hazy
-					"cloud", //cloudy
-					"cloud sun", //broken cloud
-					"cloud sun", //"Partly Cloudy":
-					"sun" //"Mostly Clear":
-				][gtatime.weather.id];
-				return `<span class="fs1 climacon ${icon}" aria-hidden="true"></span>`;
+				const icon = icons[gtatime.weather.id].replaceAll("_", " ");
+				return '<span class="fs1 climacon ${icon}" aria-hidden="true"></span>'.replace("${icon}", icon); //my editor ruins the rest of the file lol
 			}
 
 			function displayFormat(i) {
@@ -107,42 +96,65 @@
 				return `${displayFormat(parseInt(ingame_mins / 60))}:${displayFormat(ingame_mins % 60)}`;
 			}
 
+			function setRowValues(row, gtatime) {
+				const cols = row.querySelectorAll("td");
+				cols[0].innerHTML = displayFormat(gtatime.weekday);
+				cols[1].innerHTML = gtatimeToHHMM(gtatime);
+				cols[2].innerHTML = getDurationLeftInGTATime(gtatime);
+				cols[3].innerHTML = getIcon(gtatime) + " " + gtatime.weather.name;
+			}
+
 			function updateValues() {
 				let time_now = new GTATime();
 				const formatted_time = `${displayFormat(time_now.hour)}:${displayFormat(time_now.minute)}`;
 				document.querySelector("#day").innerText = time_now.weekday;
 				document.querySelector("#time").innerText = formatted_time;
 
-				const weather_table = document.querySelector("#weather");
-				weather_table.innerHTML = `<tr> <th>Start Day</th> <th>Start Time</th> <th>Duration Left</th> <th>Weather Type</th> </tr>`;
-
 				const currentStartTime = new GTATime(time_now.unix_time - time_now.weather.timeslice.duration + time_now.weather.timeslice.left);
-				weather_table.innerHTML += `<tr> <td>${displayFormat(currentStartTime.weekday)}</td> <td>${gtatimeToHHMM(currentStartTime)}</td> <td>${getDurationLeftInGTATime(time_now)}</td> <td>${getIcon(time_now)} ${time_now.weather.name}</td> </tr>`;
+				let cols = html_rows[0].querySelectorAll("td");
+				cols[0].innerHTML = displayFormat(currentStartTime.weekday);
+				cols[1].innerHTML = gtatimeToHHMM(currentStartTime);
+				cols[2].innerHTML = getDurationLeftInGTATime(time_now);
+				cols[3].innerHTML = getIcon(time_now) + " " + time_now.weather.name;
 
 				//next
 				current = new GTATime(time_now.unix_time + time_now.weather.timeslice.left);
-				weather_table.innerHTML += `<tr> <td>${current.weekday}</td> <td>${gtatimeToHHMM(current)}</td> <td>${getDurationLeftInGTATime(current)}</td> <td>${getIcon(current)} ${current.weather.name}</td> </tr>`;
+				setRowValues(html_rows[1], current);
 
 				changeFavicon(time_now);
 				document.title = `${getDurationLeftInGTATime(time_now)} -> ${current.weather.name}`;
 
-				for(let i = 1; i < 10; i++) {
+				for(let i = 2; i < 10; i++) {
 					current = new GTATime(current.unix_time + current.weather.timeslice.left);
-					weather_table.innerHTML += `<tr> <td>${current.weekday}</td> <td>${gtatimeToHHMM(current)}</td> <td>${getDurationLeftInGTATime(current)}</td> <td>${getIcon(current)} ${current.weather.name}</td> </tr>`;
+					setRowValues(html_rows[i], current);
 				}
 			}
 
 			window.onload = async () => {
 				await initGTATime();
-				updateValues();
+				html_rows = document.querySelectorAll("#weather tr[id]");
 				setInterval(updateValues, 1000);
+				updateValues();
+				document.querySelector("#centre").style.display = "block";
 			};
 		</script>
 	</head>
 	<body>
 		<div id="centre">
 			<h1><span id="day">Monday</span> | <span id="time">00:00</span></h1>
-			<table id="weather"></table>
+			<table id="weather">
+				<tr> <th>Start Day</th> <th>Start Time</th> <th>Duration Left</th> <th>Weather Type</th> </tr>
+				<tr id="row0"> <td></td> <td></td> <td></td> <td></td> </tr>
+				<tr id="row1"> <td></td> <td></td> <td></td> <td></td> </tr>
+				<tr id="row2"> <td></td> <td></td> <td></td> <td></td> </tr>
+				<tr id="row3"> <td></td> <td></td> <td></td> <td></td> </tr>
+				<tr id="row4"> <td></td> <td></td> <td></td> <td></td> </tr>
+				<tr id="row5"> <td></td> <td></td> <td></td> <td></td> </tr>
+				<tr id="row6"> <td></td> <td></td> <td></td> <td></td> </tr>
+				<tr id="row7"> <td></td> <td></td> <td></td> <td></td> </tr>
+				<tr id="row8"> <td></td> <td></td> <td></td> <td></td> </tr>
+				<tr id="row9"> <td></td> <td></td> <td></td> <td></td> </tr>
+			</table>
 		</div>
 	</body>
 </html>
