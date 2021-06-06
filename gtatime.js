@@ -9,9 +9,10 @@ if(typeof(process) != "undefined") {
 	WEATHER_NAME = require("./weather_names.json");
 	WEATHER_PERIODS = require("./weather_periods.json");
 } else {
-	window.initGTATime = async () => {
-		WEATHER_NAME = await (await fetch("./weather_names.json")).json();
-		WEATHER_PERIODS = await (await fetch("./weather_periods.json")).json();
+	window.initGTATime = async (path) => {
+		if(!path) path = ".";
+		WEATHER_NAME = await (await fetch(path + "/weather_names.json")).json();
+		WEATHER_PERIODS = await (await fetch(path + "/weather_periods.json")).json();
 	}
 }
 
