@@ -21,8 +21,6 @@ $GLOBALS["ingame_hr_len"] = 120;
 
 $GLOBALS["weather_name"] = json_decode(file_get_contents("weather_names.json"));
 
-$GLOBALS["weekday_name"] = json_decode(file_get_contents("weekday_names.json"));
-
 $GLOBALS["weather_periods"] = json_decode(file_get_contents("weather_periods.json"));
 
 class TimeSlice {
@@ -77,7 +75,6 @@ class GTATime {
 
 		$this->weather = new Weather($time);
 
-		$this->weekday = $GLOBALS["weekday_name"][$time["current_day"] % count($GLOBALS["weekday_name"])];
 		$this->day = intval($this->weather->period / count($GLOBALS["weather_periods"]) * 16) + 1;
 		$this->hour = intval($time["current_hr"]);
 		$this->minute = intval(($time["current_hr"] - $this->hour) * 60.0);

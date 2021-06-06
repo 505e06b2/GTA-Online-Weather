@@ -10,8 +10,6 @@ WEATHER_PERIODS = json.load(open("weather_periods.json")) #this was generated wi
 #considered parity with https://wiki.gtanet.work/index.php?title=Weather, but didn't seem useful
 WEATHER_NAME = json.load(open("weather_names.json"))
 
-WEEKDAY_NAME = json.load(open("weekday_names.json"))
-
 #This class is for turning GTA hrs (as a float) to irl seconds - the weather only changes on the hour, so it doesn't seem as useful to return the GTA hrs
 class TimeSlice:
 	def __init__(self, timeslice):
@@ -65,7 +63,6 @@ class GTATime:
 
 		self.weather = Weather(time)
 
-		self.weekday = WEEKDAY_NAME[time["current_day"] % len(WEEKDAY_NAME)] #SEEMS TO CHANGE WHENEVER - NOT ACCURATE
 		self.day = int(self.weather.period / len(WEATHER_PERIODS) * 16) + 1 #+1 to make it 1-indexed
 		self.hour = int(time["current_hr"])
 		self.minute = int((time["current_hr"] - self.hour) * 60.0) #remove whole number with -self.hours, *60 for hrs to mins

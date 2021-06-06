@@ -8,12 +8,10 @@ let WEATHER_PERIODS = [];
 
 if(typeof(process) != "undefined") {
 	WEATHER_NAME = require("./weather_names.json");
-	WEEKDAY_NAME = require("./weekday_names.json");
 	WEATHER_PERIODS = require("./weather_periods.json");
 } else {
 	window.initGTATime = async () => {
 		WEATHER_NAME = await (await fetch("./weather_names.json")).json();
-		WEEKDAY_NAME = await (await fetch("./weekday_names.json")).json();
 		WEATHER_PERIODS = await (await fetch("./weather_periods.json")).json();
 	}
 }
@@ -71,7 +69,6 @@ class GTATime {
 
 		this.weather = new Weather(time);
 
-		this.weekday = WEEKDAY_NAME[time["current_day"] % WEEKDAY_NAME.length];
 		this.day = parseInt(this.weather.period / WEATHER_PERIODS.length * 16) + 1;
 		this.hour = parseInt(time["current_hr"]);
 		this.minute = parseInt((time["current_hr"] - this.hour) * 60.0);
