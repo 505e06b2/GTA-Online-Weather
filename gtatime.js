@@ -3,7 +3,6 @@
 const INGAME_HR_LEN = 120;
 
 let WEATHER_NAME = [];
-let WEEKDAY_NAME = [];
 let WEATHER_PERIODS = [];
 
 if(typeof(process) != "undefined") {
