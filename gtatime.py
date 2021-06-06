@@ -65,7 +65,7 @@ class GTATime:
 
 		self.weather = Weather(time)
 
-		self.weekday = WEEKDAY_NAME[time["current_day"] % len(WEEKDAY_NAME)]
+		self.weekday = WEEKDAY_NAME[time["current_day"] % len(WEEKDAY_NAME)] #SEEMS TO CHANGE WHENEVER - NOT ACCURATE
 		self.day = int(self.weather.period / len(WEATHER_PERIODS) * 16) + 1 #+1 to make it 1-indexed
 		self.hour = int(time["current_hr"])
 		self.minute = int((time["current_hr"] - self.hour) * 60.0) #remove whole number with -self.hours, *60 for hrs to mins
