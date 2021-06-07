@@ -59,6 +59,7 @@ class Weather {
 
 class GTATime {
 	constructor(wanted_time) {
+		if(!WEATHER_NAME || !WEATHER_PERIODS) throw "initGTATime was not called/successful";
 		if(typeof(wanted_time) == "undefined") wanted_time = (new Date()).getTime() / 1000;
 		this.unix_time = wanted_time;
 
